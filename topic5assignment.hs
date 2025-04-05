@@ -11,51 +11,47 @@ main = do
   putStrLn (" 1  -  1  =  0 | " ++ showNat (sub (convInt 1) (convInt 1)))
   putStrLn ("54  - 32  = 22 | " ++ showNat (sub (convInt 54) (convInt 32)))
 
-  -- putStrLn "\nTEST MULTIPLICATION:"
-  -- putStrLn (" 0  *  0  =  0 | " ++ show (mul 0 0))
-  -- putStrLn (" 1  *  0  =  0 | " ++ show (mul 1 0))
-  -- putStrLn (" 0  *  1  =  0 | " ++ show (mul 0 1))
-  -- putStrLn (" 1  *  1  =  1 | " ++ show (mul 1 1))
-  -- putStrLn (" 2  *  1  =  2 | " ++ show (mul 2 1))
-  -- putStrLn ("54  *  3 = 162 | " ++ show (mul 54 3))
+  putStrLn "\nTEST MULTIPLICATION:"
+  putStrLn (" 0  *  0  =  0 | " ++ showNat (mul (convInt 0) (convInt 0)))
+  putStrLn (" 1  *  0  =  0 | " ++ showNat (mul (convInt 1) (convInt 0)))
+  putStrLn (" 0  *  1  =  0 | " ++ showNat (mul (convInt 0) (convInt 1)))
+  putStrLn (" 1  *  1  =  1 | " ++ showNat (mul (convInt 1) (convInt 1)))
+  putStrLn (" 2  *  1  =  2 | " ++ showNat (mul (convInt 2) (convInt 1)))
+  putStrLn ("54  *  3 = 162 | " ++ showNat (mul (convInt 54) (convInt 3)))
 
-  -- putStrLn "\nTEST DIVISION:"
-  -- putStrLn (" 0  %  1  =  0 | " ++ show (divd 0 1))
-  -- putStrLn (" 1  %  1  =  1 | " ++ show (divd 1 1))
-  -- putStrLn (" 2  %  1  =  2 | " ++ show (divd 2 1))
-  -- putStrLn ("54  %  3  = 18 | " ++ show (divd 54 3))
+  putStrLn "\nTEST DIVISION:"
+  putStrLn (" 0  %  1  =  0 | " ++ showNat (divd (convInt 0) (convInt 1)))
+  putStrLn (" 1  %  1  =  1 | " ++ showNat (divd (convInt 1) (convInt 1)))
+  putStrLn (" 2  %  1  =  2 | " ++ showNat (divd (convInt 2) (convInt 1)))
+  putStrLn ("54  %  3  = 18 | " ++ showNat (divd (convInt 54) (convInt 3)))
 
 data Natural = Zero | Successor Natural
 
 -- 
-recursiveNatural :: a -> (Natural -> a -> a) -> Natural -> a
+recursiveNatural :: arg -> (Natural -> arg -> arg) -> Natural -> arg
 recursiveNatural arg _ Zero = arg
 recursiveNatural arg base (Successor acc) = base acc (recursiveNatural arg base acc)
 
+predecessorNatural :: Natural -> Natural
+predecessorNatural Zero = Zero
+predecessorNatural (Successor a) = a
+
 add :: Natural -> Natural -> Natural
-add a b = recursiveNatural b (\ _ c -> Successor c) a
+add a b = recursiveNatural b (\_ c -> Successor c) a
 
 sub :: Natural -> Natural -> Natural
-sub a b = recursiveNatural b (\_ c -> Successor c) a
+sub a = recursiveNatural a (\_ c -> predecessorNatural c)
 
--- add :: Integer -> Integer -> Integer
--- add 0 n = n
--- add m n = add (m - 1) (n + 1)
+mul :: Natural -> Natural -> Natural
+mul a b = recursiveNatural Zero (\_ c -> add b c) a
 
--- sub :: Integer -> Integer -> Integer
--- sub x 0 = x
--- sub 0 _ = 0
--- sub x y = sub (x - 1) (y - 1)
+divd :: Natural -> Natural -> Natural
+divd _ Zero = error "division by zero error"
+divd dividend divisor = 
+  if convNatural dividend < convNatural divisor
+    then Zero
+    else Successor (divd (sub dividend divisor) divisor)
 
--- mul :: Integer -> Integer -> Integer
--- mul 0 _ = 0
--- mul m n = add n (mul (m - 1) n)
-
--- divd :: Integer -> Integer -> Integer
--- divd _ 0 = error "Division by zero"
--- divd n m
---   | n < m     = 0
---   | otherwise = 1 + divd (sub n m) m
 
 --------------------- UTILITIES -------------------------
 
