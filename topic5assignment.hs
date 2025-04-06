@@ -1,72 +1,92 @@
 main = do
-  putStrLn "TEST ADDITION:"
-  putStrLn (" 0  +  0  =  0 | " ++ showNat (add (convInt 0) (convInt 0)))
-  putStrLn (" 0  +  1  =  1 | " ++ showNat (add (convInt 1) (convInt 0)))
-  putStrLn (" 1  +  1  =  2 | " ++ showNat (add (convInt 1) (convInt 1)))
-  putStrLn ("54 + 789 = 843 | " ++ showNat (add (convInt 54) (convInt 789)))
-
-  putStrLn "\nTEST SUBTRACTION:"
-  putStrLn (" 0  -  0  =  0 | " ++ showNat (sub (convInt 0) (convInt 0)))
-  putStrLn (" 1  -  0  =  1 | " ++ showNat (sub (convInt 1) (convInt 0)))
-  putStrLn (" 1  -  1  =  0 | " ++ showNat (sub (convInt 1) (convInt 1)))
-  putStrLn ("54  - 32  = 22 | " ++ showNat (sub (convInt 54) (convInt 32)))
-
-  putStrLn "\nTEST MULTIPLICATION:"
-  putStrLn (" 0  *  0  =  0 | " ++ showNat (mul (convInt 0) (convInt 0)))
-  putStrLn (" 1  *  0  =  0 | " ++ showNat (mul (convInt 1) (convInt 0)))
-  putStrLn (" 0  *  1  =  0 | " ++ showNat (mul (convInt 0) (convInt 1)))
-  putStrLn (" 1  *  1  =  1 | " ++ showNat (mul (convInt 1) (convInt 1)))
-  putStrLn (" 2  *  1  =  2 | " ++ showNat (mul (convInt 2) (convInt 1)))
-  putStrLn ("54  *  3 = 162 | " ++ showNat (mul (convInt 54) (convInt 3)))
-
-  putStrLn "\nTEST DIVISION:"
-  putStrLn (" 0  %  1  =  0 | " ++ showNat (divd (convInt 0) (convInt 1)))
-  putStrLn (" 1  %  1  =  1 | " ++ showNat (divd (convInt 1) (convInt 1)))
-  putStrLn (" 2  %  1  =  2 | " ++ showNat (divd (convInt 2) (convInt 1)))
-  putStrLn ("54  %  3  = 18 | " ++ showNat (divd (convInt 54) (convInt 3)))
+  putStrLn "OVERALL ASSIGNMENT TESTING:"
+  putStrLn ("add  [\"SSS0\", \"SS0\"] =    SSSSS0 | " ++ add "SSS0" "SS0")
+  putStrLn ("mult [\"SSS0\", \"SS0\"] =   SSSSSS0 | " ++ mult "SSS0" "SS0")
+  putStrLn ("expo [\"SSS0\", \"SS0\"] = SSSSSSSS0 | " ++ expo "SSS0" "SS0")
+  putStrLn ("tsub [\"SS0\", \"SSSS0\"] =      SS0 | " ++ tsub "SS0" "SSSS0")
+  putStrLn ("tsub [\"SSSSS0\", \"SSSS0\"] =     0 | " ++ tsub "SSSSS0" "SSSS0")
+  putStrLn ("sig [\"SSSSS0\"] =              S0 | " ++ sig "SSSSS0")
+  putStrLn ("sig [\"SSS0\"] =                S0 | " ++ sig "SSS0")
+  putStrLn ("sig [\"0\"] =                    0 | " ++ sig "0")
+  putStrLn ("eq [\"SSS0\", \"SS0\"] =          S0 | " ++ eq "SSS0" "SS0")
+  putStrLn ("eq [\"SSS0\", \"SSS0\"] =          0 | " ++ eq "SSS0" "SSS0")
+  putStrLn ("p [\"SSSS0\"] =               SSS0 | " ++ toRepresentation(predecessor (fromRepresentation "SSSS0")))
+  putStrLn ("p [\"SSSS0\"] =               SSS0 | " ++ toRepresentation(predecessor (fromRepresentation "SSSS0")))
 
 data Natural = Zero | Successor Natural
 
--- 
-recursiveNatural :: arg -> (Natural -> arg -> arg) -> Natural -> arg
-recursiveNatural arg _ Zero = arg
-recursiveNatural arg base (Successor acc) = base acc (recursiveNatural arg base acc)
+-- Recursion for natural numbers
+-- When the input is Zero, the first arg is returned.
+-- The successor function is applied to the inner natural and
+-- the recursive result.
+recursor :: arg -> (Natural -> arg -> arg) -> Natural -> arg
+recursor arg _ Zero = arg
+recursor arg base (Successor acc) = base acc (recursor arg base acc)
 
-predecessorNatural :: Natural -> Natural
-predecessorNatural Zero = Zero
-predecessorNatural (Successor a) = a
 
-add :: Natural -> Natural -> Natural
-add a b = recursiveNatural b (\_ c -> Successor c) a
+-- It returns the predecessor of a natural number
+-- It stops at Zero, but for Successor n, it returns n
+predecessor :: Natural -> Natural
+predecessor Zero = Zero
+predecessor (Successor arg) = arg
 
-sub :: Natural -> Natural -> Natural
-sub a = recursiveNatural a (\_ c -> predecessorNatural c)
+-- Adds two natural numbers
+internalAdd :: Natural -> Natural -> Natural
+internalAdd summand1 summand2 = recursor summand2 (\_ c -> Successor c) summand1
+add :: String -> String -> String
+add summand1 summand2 = toRepresentation (internalAdd (fromRepresentation summand1) (fromRepresentation summand2))
 
-mul :: Natural -> Natural -> Natural
-mul a b = recursiveNatural Zero (\_ c -> add b c) a
+-- Subtracts two natural numbers
+internalSub :: Natural -> Natural -> Natural
+internalSub minuend = recursor minuend (\_ c -> predecessor c)
+tsub :: String -> String -> String
+tsub minuend subtrahend = toRepresentation (internalSub (fromRepresentation subtrahend) (fromRepresentation minuend))
 
-divd :: Natural -> Natural -> Natural
-divd _ Zero = error "division by zero error"
-divd dividend divisor = 
-  if convNatural dividend < convNatural divisor
+-- Multiplies two natural numbers
+interalMult :: Natural -> Natural -> Natural
+interalMult factor1 factor2 = recursor Zero (\_ c -> internalAdd factor2 c) factor1
+mult :: String -> String -> String
+mult factor1 factor2 = toRepresentation (interalMult (fromRepresentation factor1) (fromRepresentation factor2))
+
+-- Divides two natural numbers (rounding to zero if < 1)
+interalDivd :: Natural -> Natural -> Natural
+interalDivd _ Zero = error "division by zero error"
+interalDivd dividend divisor =
+  if convNat dividend < convNat divisor
     then Zero
-    else Successor (divd (sub dividend divisor) divisor)
+    else Successor (interalDivd (internalSub dividend divisor) divisor)
+divd :: String -> String -> String
+divd dividend divisor = toRepresentation (interalDivd (fromRepresentation dividend) (fromRepresentation divisor))
 
+-- Exponentiates two natural numbers
+interalExpo :: Natural -> Natural -> Natural
+interalExpo base = recursor (Successor Zero) (\_ c -> interalMult base c)
+expo :: String -> String -> String
+expo base power = toRepresentation (interalExpo (fromRepresentation power) (fromRepresentation base))
+
+sig :: String -> String
+sig "0" = "0"
+sig _ = "S0"
+
+eq :: String -> String -> String
+eq a b =
+  if convNat (fromRepresentation a) == convNat (fromRepresentation b)
+    then "0"
+    else "S0"
 
 --------------------- UTILITIES -------------------------
 
--- converts an Integer into a Natural
-convInt :: Integer -> Natural
-convInt a
-  | a <= 0 = Zero
-  | otherwise = Successor (convInt (a - 1))
-
--- converts a Natural to a String
-showNat :: Natural -> String
-showNat Zero = "0"
-showNat (Successor n) = show (convNatural n + 1)
-
 -- converts a Natural back to an Integer
-convNatural :: Natural -> Int
-convNatural Zero = 0
-convNatural (Successor n) = 1 + convNatural n
+convNat :: Natural -> Int
+convNat Zero = 0
+convNat (Successor n) = 1 + convNat n
+
+-- converts a Natural into the string representation for the class
+toRepresentation :: Natural -> String
+toRepresentation Zero = "0"
+toRepresentation (Successor n) = "S" ++ toRepresentation n
+
+-- converts a string representation to a Natural
+fromRepresentation :: String -> Natural
+fromRepresentation "0" = Zero
+fromRepresentation ('S' : rest) = Successor (fromRepresentation rest)
